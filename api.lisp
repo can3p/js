@@ -50,13 +50,15 @@
              (setf line (setf accum (concatenate 'string accum '(#\newline) line))
                    continue nil)
              (setf accum line))
-         (catch 'err
-           (handler-bind ((js-condition #'handle-js-condition)
-                          (error #'handle-error))
-             (let ((result (compile-eval (translate-ast (parse/err line)))))
-               (unless (eq result :undefined)
-                 (format t "~a~%" (to-string result))))))
-         (format t (if continue "  " "> "))))))
+         (when (or continue (not (equal line "")))
+           (catch 'err
+             (handler-bind ((js-condition #'handle-js-condition)
+                            (error #'handle-error))
+               (let ((result (compile-eval (translate-ast (parse/err line)))))
+                 (unless (eq result :undefined)
+                   (format t "~a~%" (to-string result)))))))
+         (format *query-io* (if continue "...  " "> "))
+         (force-output *query-io*)))))
 
 (defun tests ()
   (let ((*enable-function.caller* t))
